@@ -1,4 +1,4 @@
-package com.example.weather.view
+package com.example.weather.recycleradapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -11,8 +11,6 @@ import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.example.weather.R
 import com.example.weather.databinding.FragmentHomeRecyclerWeather7DaysBinding
-import com.example.weather.databinding.FragmentHomeRecyclerWeatherEveryThreeHoursBinding
-import com.example.weather.model.Response
 import com.example.weather.model.Response7
 import java.text.SimpleDateFormat
 import java.util.*

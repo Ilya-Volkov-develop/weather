@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group>
+        <item
+            android:id="@+id/mbar"
+            android:title="@string/mbar"
+            />
+        <item
+            android:id="@+id/atm"
+            android:title="@string/atm"
+            />
+        <item
+            android:id="@+id/mmHg"
+            android:title="@string/mmhg"
+            />
+        <item
+            android:id="@+id/inHg"
+            android:title="@string/inHg"
+            />
+        <item
+            android:id="@+id/hPa"
+            android:title="@string/hPa"
+            />
+    </group>
+</menu>

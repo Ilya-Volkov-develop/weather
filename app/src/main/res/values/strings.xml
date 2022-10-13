@@ -6,4 +6,22 @@
     <string name="cloudiness">Cloudiness</string>
     <string name="now">Now</string>
     <string name="forcats_for_7_days">Forcats for 7 Days</string>
+    <string name="share">Share</string>
+    <string name="setting">Setting</string>
+    <string name="unit">UNIT</string>
+    <string name="temperature_unit">Temperature unit</string>
+    <string name="wind_speed_unit">Wind speed unit</string>
+    <string name="atmospheric_pressure">Atmospheric pressure unit</string>
+    <string name="extra">EXTRA</string>
+    <string name="about">About</string>
+    <string name="privacy_policy">Privacy policy</string>
+    <string name="km_h">km/h</string>
+    <string name="mi_h">mi/h</string>
+    <string name="m_s">m/s</string>
+    <string name="kn">kn</string>
+    <string name="mbar">mbar</string>
+    <string name="atm">atm</string>
+    <string name="mmhg">mmHg</string>
+    <string name="inHg">inHg</string>
+    <string name="hPa">hPa</string>
 </resources>

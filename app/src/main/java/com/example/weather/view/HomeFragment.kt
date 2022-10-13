@@ -1,6 +1,7 @@
 package com.example.weather.view
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
@@ -8,15 +9,22 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import androidx.appcompat.view.ContextThemeWrapper
+import androidx.appcompat.widget.PopupMenu
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import coil.ImageLoader
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
+import com.example.weather.R
 import com.example.weather.databinding.FragmentHomeBinding
 import com.example.weather.model.Response
+import com.example.weather.recycleradapter.Weather7DaysAdapter
+import com.example.weather.recycleradapter.WeatherEveryThreeHoursAdapter
+import com.example.weather.view.setting.SettingFragment
 import com.example.weather.viewmodel.AppStateWeather
 import com.example.weather.viewmodel.HomeViewModel
+import kotlinx.android.synthetic.main.fragment_home.*
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
@@ -56,6 +64,10 @@ class HomeFragment:Fragment() {
         viewModel.getLiveData().observe(viewLifecycleOwner) { renderData(it) }
         viewModel.getWeatherNowFromRemoteServer(lat, lon)
 
+        btn_setting.setOnClickListener {
+            showPopupMenu(it)
+        }
+
         //        arguments?.let {
 //            it.getParcelable<City>(BUNDLE_KEY_MAIN_FRAGMENT_IN_DETAILS_FRAGMENT)?.let { city ->
 //                localWeather = Weather(city,city.lat.toInt(),city.lon.toInt())
@@ -63,6 +75,35 @@ class HomeFragment:Fragment() {
 //            }
 //            position = it.getInt(BUNDLE_KEY_MAIN_FRAGMENT_IN_DETAILS_FRAGMENT_POSITION)
 //        }
+    }
+
+    private fun showPopupMenu(v: View) {
+        val context = ContextThemeWrapper(requireContext(),R.style.MyPopupMenu)
+        val popupMenu = PopupMenu(context, v)
+        popupMenu.inflate(R.menu.setting_menu)
+
+        popupMenu.setOnMenuItemClickListener {
+            when(it.itemId){
+                R.id.share -> {
+                    val sharingIntent = Intent(Intent.ACTION_SEND)
+                    sharingIntent.type = "text/plain"
+                    sharingIntent.putExtra(Intent.EXTRA_TEXT, "Text")
+                    sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Subject")
+                    startActivity(Intent.createChooser(sharingIntent, requireActivity().resources.getString(R.string.share)))
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.setting -> {
+                    requireActivity().supportFragmentManager.beginTransaction()
+                        .add(R.id.container,SettingFragment.newInstance(),"setting")
+                        .addToBackStack("setting").commit()
+                    return@setOnMenuItemClickListener true
+                }
+                else -> {
+                    return@setOnMenuItemClickListener false
+                }
+            }
+        }
+        popupMenu.show()
     }
 
     private fun renderData(appStateWeatherNow: Any) {
