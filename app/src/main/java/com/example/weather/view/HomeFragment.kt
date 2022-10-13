@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,11 +13,9 @@ import androidx.lifecycle.ViewModelProvider
 import coil.ImageLoader
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
-import com.example.weather.R
 import com.example.weather.databinding.FragmentHomeBinding
 import com.example.weather.model.Response
-import com.example.weather.viewmodel.AppStateWeatherEveryThreeHours
-import com.example.weather.viewmodel.AppStateWeatherNow
+import com.example.weather.viewmodel.AppStateWeather
 import com.example.weather.viewmodel.HomeViewModel
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -29,10 +26,13 @@ class HomeFragment:Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val lat:Double = 55.755826
-    private val lon:Double = 37.617299900000035
+    private val lat:Double = 55.755811
+    private val lon:Double = 37.617617
+    private val weatherList = mutableListOf<Response>()
 
     private val viewModel: HomeViewModel by lazy { ViewModelProvider(this)[HomeViewModel::class.java] }
+    private val adapterEveryThreeHours: WeatherEveryThreeHoursAdapter by lazy { WeatherEveryThreeHoursAdapter() }
+    private val adapter7Days: Weather7DaysAdapter by lazy { Weather7DaysAdapter() }
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -42,11 +42,21 @@ class HomeFragment:Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.weatherImg.loadIconSvg(R.drawable.c3)
+        init()
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    private fun init() {
+        val sdf = SimpleDateFormat("EEEE | MMM dd")
+        val dayOfTheWeek: String = sdf.format(Date())
+        binding.date2.text = dayOfTheWeek
+
+        binding.weather7RecyclerView.adapter = adapter7Days
+        binding.weatherRecyclerView.adapter = adapterEveryThreeHours
         viewModel.getLiveData().observe(viewLifecycleOwner) { renderData(it) }
         viewModel.getWeatherNowFromRemoteServer(lat, lon)
-        viewModel.getWeatherEveryHoursFromRemoteServer(lat,lon)
-//        arguments?.let {
+
+        //        arguments?.let {
 //            it.getParcelable<City>(BUNDLE_KEY_MAIN_FRAGMENT_IN_DETAILS_FRAGMENT)?.let { city ->
 //                localWeather = Weather(city,city.lat.toInt(),city.lon.toInt())
 //                viewModel.getWeatherFromRemoteServer(city.lat,city.lon)
@@ -57,10 +67,22 @@ class HomeFragment:Fragment() {
 
     private fun renderData(appStateWeatherNow: Any) {
         when(appStateWeatherNow){
-            is AppStateWeatherEveryThreeHours.Success ->{
-                Log.d("mylogs",appStateWeatherNow.weatherData.toString())
+            is AppStateWeather.Success7 -> {
+                adapter7Days.setWeather(appStateWeatherNow.weatherData)
             }
-            is AppStateWeatherNow.Success -> {
+
+            is AppStateWeather.SuccessEveryThreeHours ->{
+                appStateWeatherNow.weatherData.forEach {
+                    if (it.date.unix > System.currentTimeMillis()/1000) {
+                        weatherList.add(it)
+                    }
+                }
+                adapterEveryThreeHours.setWeather(weatherList)
+                viewModel.getWeather7DaysFromRemoteServer(lat, lon)
+            }
+            is AppStateWeather.Success -> {
+                weatherList.add(appStateWeatherNow.weatherData)
+                viewModel.getWeatherEveryHoursFromRemoteServer(lat,lon)
                 setWeatherData(appStateWeatherNow.weatherData)
                 getNameCity(lat,lon)
             }
@@ -82,36 +104,47 @@ class HomeFragment:Fragment() {
             val sdf = SimpleDateFormat("EEEE | MMM dd")
             val dayOfTheWeek: String = sdf.format(Date())
             date.text = dayOfTheWeek
+
+            val resId = requireActivity().resources.getIdentifier(weather.icon, "drawable", requireActivity().packageName)
+            binding.weatherImg.loadIconSvg(resId)
         }
     }
 
     //Получаю город по координатам
     private fun getNameCity(lat:Double,lon:Double){
-        val geocoder = Geocoder(requireContext(), Locale.getDefault())
-        try {
-            var subAdminArea = ""
-            var mThoroughfare = ""
-            var mSubThoroughfare = ""
-            val addresses: List<Address>? = geocoder.getFromLocation(lat, lon, 1)
-            if (addresses != null) {
-                if (addresses[0].subAdminArea != null){
-                    subAdminArea = addresses[0].subAdminArea
-                }
-                if (addresses[0].thoroughfare != null){
-                    mThoroughfare = addresses[0].thoroughfare
-                    if (addresses[0].subThoroughfare != null){
-                        mSubThoroughfare = addresses[0].subThoroughfare
+        Thread {
+            val geocoder = Geocoder(requireContext(), Locale.getDefault())
+            try {
+                var subAdminArea = ""
+                var mThoroughfare = ""
+                var mSubThoroughfare = ""
+                val addresses: List<Address>? = geocoder.getFromLocation(lat, lon, 1)
+                if (addresses != null) {
+                    if (addresses[0].subAdminArea != null) {
+                        subAdminArea = addresses[0].subAdminArea
+                    }
+                    if (addresses[0].thoroughfare != null) {
+                        mThoroughfare = addresses[0].thoroughfare
+                        if (addresses[0].subThoroughfare != null) {
+                            mSubThoroughfare = addresses[0].subThoroughfare
+                        }
+                    }
+                    val strReturnedAddress = StringBuilder(
+                        "$subAdminArea\n$mThoroughfare $mSubThoroughfare")
+                    requireActivity().runOnUiThread {
+                        binding.cityName.text = strReturnedAddress.toString()
+                    }
+                } else {
+                    requireActivity().runOnUiThread {
+                        binding.cityName.text = "Нет адресов!"
                     }
                 }
-                val strReturnedAddress = StringBuilder(
-                    "$subAdminArea\n$mThoroughfare $mSubThoroughfare")
-                binding.cityName.text = strReturnedAddress.toString()
-            } else {
-                binding.cityName.text = "Нет адресов!"
+            } catch (e: IOException) {
+                requireActivity().runOnUiThread {
+                    binding.cityName.text = "Не могу получить адрес!"
+                }
             }
-        } catch (e: IOException) {
-            binding.cityName.text = "Не могу получить адрес!"
-        }
+        }.start()
     }
 
     private fun ImageView.loadIconSvg(url: Int){

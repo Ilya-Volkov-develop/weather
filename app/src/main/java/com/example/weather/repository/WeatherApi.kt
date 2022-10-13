@@ -1,8 +1,10 @@
 package com.example.weather.repository
 
+import com.example.weather.model.Weather7DTO
 import com.example.weather.model.WeatherNowDTO
 import com.example.weather.model.WeatherEveryThreeHoursDTO
 import com.example.weather.utils.API_KEY_NAME
+import com.example.weather.utils.WEATHER_7_DAYS_API_URL_END_POINT
 import com.example.weather.utils.WEATHER_EVERY_THREE_HOURS_API_URL_END_POINT
 import com.example.weather.utils.WEATHER_NOW_API_URL_END_POINT
 import retrofit2.Call
@@ -25,4 +27,12 @@ interface WeatherApi {
         @Query("longitude") lon:Double,
         @Query("days") days:Int
     ): Call<WeatherEveryThreeHoursDTO>
+
+    @GET(WEATHER_7_DAYS_API_URL_END_POINT)
+    fun getWeather7Days(
+        @Header(API_KEY_NAME) apikey:String,
+        @Query("latitude") lat:Double,
+        @Query("longitude") lon:Double,
+        @Query("days") days:Int
+    ): Call<Weather7DTO>
 }

@@ -2,7 +2,8 @@
     <string name="app_name">Weather</string>
     <string name="wind">Wind</string>
     <string name="pressure">Pressure</string>
-    <string name="chance_of_rain">Chance of rain</string>
     <string name="humidity">Humidity</string>
     <string name="cloudiness">Cloudiness</string>
+    <string name="now">Now</string>
+    <string name="forcats_for_7_days">Forcats for 7 Days</string>
 </resources>
