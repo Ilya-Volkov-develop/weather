@@ -1,5 +1,8 @@
 package com.example.weather.view
 
+import android.annotation.SuppressLint
+import android.location.Address
+import android.location.Geocoder
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,14 +16,21 @@ import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.example.weather.R
 import com.example.weather.databinding.FragmentHomeBinding
-import com.example.weather.viewmodel.AppStateWeather
+import com.example.weather.model.Response
+import com.example.weather.viewmodel.AppStateWeatherEveryThreeHours
+import com.example.weather.viewmodel.AppStateWeatherNow
 import com.example.weather.viewmodel.HomeViewModel
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 class HomeFragment:Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+    private val lat:Double = 55.755826
+    private val lon:Double = 37.617299900000035
 
     private val viewModel: HomeViewModel by lazy { ViewModelProvider(this)[HomeViewModel::class.java] }
 
@@ -34,7 +44,8 @@ class HomeFragment:Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.weatherImg.loadIconSvg(R.drawable.c3)
         viewModel.getLiveData().observe(viewLifecycleOwner) { renderData(it) }
-        viewModel.getWeatherFromRemoteServer(54.35, 52.52)
+        viewModel.getWeatherNowFromRemoteServer(lat, lon)
+        viewModel.getWeatherEveryHoursFromRemoteServer(lat,lon)
 //        arguments?.let {
 //            it.getParcelable<City>(BUNDLE_KEY_MAIN_FRAGMENT_IN_DETAILS_FRAGMENT)?.let { city ->
 //                localWeather = Weather(city,city.lat.toInt(),city.lon.toInt())
@@ -44,71 +55,65 @@ class HomeFragment:Fragment() {
 //        }
     }
 
-    private fun renderData(appStateWeather: AppStateWeather) {
-        with(binding){
-            when(appStateWeather){
-                is AppStateWeather.Error -> {
-//                    loadingFailed(appStateWeather.error,appStateWeather.code)
-                }
-                is AppStateWeather.Loading -> {
-//                    loadingLayout.visibility = View.VISIBLE
-                }
-                is AppStateWeather.Success -> {
-                    Log.d("mylogs",appStateWeather.weatherData.toString())
-//                    loadingLayout.visibility = View.GONE
-//                    val weather = appStateWeather.weatherData
-//                    val condition = convertConditionEngToRus(appStateWeather.condition)
-//                    setWeatherData(weather,condition)
-                }
+    private fun renderData(appStateWeatherNow: Any) {
+        when(appStateWeatherNow){
+            is AppStateWeatherEveryThreeHours.Success ->{
+                Log.d("mylogs",appStateWeatherNow.weatherData.toString())
             }
+            is AppStateWeatherNow.Success -> {
+                setWeatherData(appStateWeatherNow.weatherData)
+                getNameCity(lat,lon)
+            }
+            else -> {}
         }
 
     }
 
-    private fun convertConditionEngToRus(condition: String): String {
-        return when(condition){
-            "clear" -> "ясно"
-            "partly-cloudy" -> "малооблачно"
-            "cloudy" -> "облачно с прояснениями"
-            "overcast" -> "пасмурно"
-            "drizzle" -> "морось"
-            "light-rain" -> "небольшой дождь"
-            "rain" -> "дождь"
-            "moderate-rain" -> "умеренно сильный дождь"
-            "heavy-rain" -> "сильный дождь"
-            "continuous-heavy-rain" -> "длительный сильный дождь"
-            "showers" -> "ливень"
-            "wet-snow" -> "дождь со снегом"
-            "light-snow" -> "небольшой снег"
-            "snow" -> "снег"
-            "snow-showers" -> "снегопад"
-            "hail" -> "град"
-            "thunderstorm" -> "гроза"
-            "thunderstorm-with-rain" -> "дождь с грозой"
-            "thunderstorm-with-hail" -> "гроза с градом"
-            else -> ""
+    //Устанавливаем данные в фрагмент
+    @SuppressLint("SetTextI18n", "SimpleDateFormat")
+    private fun setWeatherData(weather: Response) {
+        with(binding){
+            temperature.text = weather.temperature.comfort.c.toString()
+            speedWind.text = weather.wind.speed.kmH.toString() + " km/h"
+            pressure.text = weather.pressure.hPa.toString() + " mmHg"
+            humidity.text = weather.humidity.percent.toString() + "%"
+            cloudiness.text = "${weather.cloudiness.percent}%"
+            conditions.text = weather.description.full
+            val sdf = SimpleDateFormat("EEEE | MMM dd")
+            val dayOfTheWeek: String = sdf.format(Date())
+            date.text = dayOfTheWeek
         }
-
     }
 
-//    //Устанавливаем данные в фрагмент
-//    @SuppressLint("SetTextI18n")
-//    private fun setWeatherData(weather: Weather, conditionText: String) {
-//        position?.let {
-//            viewModel.saveWeather(it,Weather(City(localWeather.city.nameCity,0.0,0.0),weather.temperature,weather.feelsLike,weather.icon))
-//        }
-//        with(binding){
-//            temperatureLabel.visibility = View.VISIBLE
-//            feelsLikeLabel.visibility = View.VISIBLE
-//            cityName.text = localWeather.city.nameCity
-//            cityCoordinates.text = "${weather.city.lat} ${weather.city.lon}"
-//            temperatureValue.text = "${weather.temperature}"
-//            feelsLikeValue.text = "${weather.feelsLike}"
-//            condition.text = conditionText
-//            iconWeather.loadIconSvg("https://yastatic.net/weather/i/icons/funky/dark/${weather.icon}.svg")
-//        }
-//    }
-//
+    //Получаю город по координатам
+    private fun getNameCity(lat:Double,lon:Double){
+        val geocoder = Geocoder(requireContext(), Locale.getDefault())
+        try {
+            var subAdminArea = ""
+            var mThoroughfare = ""
+            var mSubThoroughfare = ""
+            val addresses: List<Address>? = geocoder.getFromLocation(lat, lon, 1)
+            if (addresses != null) {
+                if (addresses[0].subAdminArea != null){
+                    subAdminArea = addresses[0].subAdminArea
+                }
+                if (addresses[0].thoroughfare != null){
+                    mThoroughfare = addresses[0].thoroughfare
+                    if (addresses[0].subThoroughfare != null){
+                        mSubThoroughfare = addresses[0].subThoroughfare
+                    }
+                }
+                val strReturnedAddress = StringBuilder(
+                    "$subAdminArea\n$mThoroughfare $mSubThoroughfare")
+                binding.cityName.text = strReturnedAddress.toString()
+            } else {
+                binding.cityName.text = "Нет адресов!"
+            }
+        } catch (e: IOException) {
+            binding.cityName.text = "Не могу получить адрес!"
+        }
+    }
+
     private fun ImageView.loadIconSvg(url: Int){
         val imageLoader = ImageLoader.Builder(this.context)
             .componentRegistry{add(SvgDecoder(this@loadIconSvg.context))}

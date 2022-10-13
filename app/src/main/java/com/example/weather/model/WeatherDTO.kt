@@ -2,31 +2,33 @@ package com.example.weather.model
 
 import com.google.gson.annotations.SerializedName
 
+data class WeatherEveryThreeHoursDTO (
+    @SerializedName("meta")
+    val meta: Meta,
+    @SerializedName("response")
+    val response: List<Response>
+)
 
-data class CurrentWeatherDTO (
+data class WeatherNowDTO (
     @SerializedName("meta")
     val meta:Meta,
     @SerializedName("response")
     val response: Response
 )
+
+
 data class Meta (
     val message: String,
     val code: String
 )
 
 data class Response (
-    val precipitation: Precipitation,
     val pressure: Pressure,
     val humidity: Humidity,
     val icon: String,
-    val gm: Long,
     val wind: Wind,
     val cloudiness: Cloudiness,
     val date: Date,
-//    val radiation: Map<String, Long?>,
-    val city: Long,
-    val kind: String,
-    val storm: Boolean,
     val temperature: Temperature,
     val description: Description
 )
@@ -57,17 +59,6 @@ data class Description (
 
 data class Humidity (
     val percent: Long
-)
-
-data class Precipitation (
-    @SerializedName("type_ext")
-    val typeEXT: Long,
-
-    val intensity: Long,
-    val correction: Any? = null,
-    val amount: Long,
-    val duration: Long,
-    val type: Long
 )
 
 data class Pressure (

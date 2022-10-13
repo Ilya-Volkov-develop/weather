@@ -1,23 +1,19 @@
 package com.example.weather.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.weather.model.CurrentWeatherDTO
+import com.example.weather.model.WeatherEveryThreeHoursDTO
+import com.example.weather.model.WeatherNowDTO
 import com.example.weather.repository.mainscreen.RepositoryRemoteImpl
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class HomeViewModel(private val liveData: MutableLiveData<AppStateWeather> = MutableLiveData()): ViewModel() {
+class HomeViewModel(private val liveData: MutableLiveData<Any> = MutableLiveData()): ViewModel() {
 
     private val repositoryRemoteImpl: RepositoryRemoteImpl by lazy {
         RepositoryRemoteImpl()
     }
-//
-//    private val repositoriesRoomImpl: RepositoriesRoomImpl by lazy {
-//        RepositoriesRoomImpl()
-//    }
 
     fun getLiveData() = liveData
 
@@ -25,28 +21,36 @@ class HomeViewModel(private val liveData: MutableLiveData<AppStateWeather> = Mut
 //        repositoriesRoomImpl.saveWeather(position,weather)
 //    }
 
-    fun getWeatherFromRemoteServer(lat:Double,lon:Double){
-        liveData.postValue(AppStateWeather.Loading(0))
-        repositoryRemoteImpl.getWeatherFromServer(lat,lon,callback)
+    fun getWeatherNowFromRemoteServer(lat:Double, lon:Double){
+        liveData.postValue(AppStateWeatherNow.Loading(0))
+        repositoryRemoteImpl.getWeatherNowFromServer(lat,lon,callbackNow)
     }
-//
-//    fun convertDTOtoModel(weatherDTO: WeatherDTO):Weather{
-//        return Weather(getDefaultCity(),weatherDTO.fact.temp.toInt(),weatherDTO.fact.feelsLike.toInt(),weatherDTO.fact.icon)
-//    }
-//
-    private val callback = object : Callback<CurrentWeatherDTO> {
-        override fun onFailure(call: Call<CurrentWeatherDTO>, t: Throwable) {
-            Log.d("mylogs","$call $t")
-//            liveData.postValue(AppStateWeather.Error(R.string.errorOnServer,0))
-        }
 
-        override fun onResponse(call: Call<CurrentWeatherDTO>, response: Response<CurrentWeatherDTO>) {
+    fun getWeatherEveryHoursFromRemoteServer(lat:Double, lon:Double){
+        liveData.postValue(AppStateWeatherNow.Loading(0))
+        repositoryRemoteImpl.getWeatherEveryThreeHoursFromServer(lat,lon,1,callbackEveryThreeHoursDTO)
+    }
+
+    private val callbackNow = object : Callback<WeatherNowDTO> {
+        override fun onFailure(call: Call<WeatherNowDTO>, t: Throwable) {}
+
+        override fun onResponse(call: Call<WeatherNowDTO>, response: Response<WeatherNowDTO>) {
             if (response.isSuccessful){
                 response.body()?.let {
-                    liveData.postValue(AppStateWeather.Success(it.response))
+                    liveData.postValue(AppStateWeatherNow.Success(it.response))
                 }
-            } else{
-//                liveData.postValue(AppStateWeather.Error(R.string.codeError,response.code()))
+            }
+        }
+    }
+
+    private val callbackEveryThreeHoursDTO = object : Callback<WeatherEveryThreeHoursDTO> {
+        override fun onFailure(call: Call<WeatherEveryThreeHoursDTO>, t: Throwable) {}
+
+        override fun onResponse(call: Call<WeatherEveryThreeHoursDTO>, response: Response<WeatherEveryThreeHoursDTO>) {
+            if (response.isSuccessful){
+                response.body()?.let {
+                    liveData.postValue(AppStateWeatherEveryThreeHours.Success(it.response))
+                }
             }
         }
     }
