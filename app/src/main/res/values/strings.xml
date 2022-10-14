@@ -24,4 +24,7 @@
     <string name="mmhg">mmHg</string>
     <string name="inHg">inHg</string>
     <string name="hPa">hPa</string>
+    <string name="degree">°</string>
+    <string name="degree_c">°C</string>
+    <string name="degree_f">°F</string>
 </resources>

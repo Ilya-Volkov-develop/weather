@@ -3,11 +3,11 @@
     <group>
         <item
             android:id="@+id/c"
-            android:title="°C"
+            android:title="@string/degree_c"
             />
         <item
             android:id="@+id/f"
-            android:title="°F"
+            android:title="@string/degree_f"
             />
     </group>
 </menu>

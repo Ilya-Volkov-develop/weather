@@ -31,12 +31,12 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class HomeFragment:Fragment() {
+class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val lat:Double = 55.755811
-    private val lon:Double = 37.617617
+    private val lat: Double = 55.755811
+    private val lon: Double = 37.617617
     private val weatherList = mutableListOf<Response>()
     private lateinit var sp: SharedPreferences
 
@@ -45,7 +45,11 @@ class HomeFragment:Fragment() {
     private val adapter7Days: Weather7DaysAdapter by lazy { Weather7DaysAdapter() }
 
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?,
+    ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -70,34 +74,27 @@ class HomeFragment:Fragment() {
         btn_setting.setOnClickListener {
             showPopupMenu(it)
         }
-
-        //        arguments?.let {
-//            it.getParcelable<City>(BUNDLE_KEY_MAIN_FRAGMENT_IN_DETAILS_FRAGMENT)?.let { city ->
-//                localWeather = Weather(city,city.lat.toInt(),city.lon.toInt())
-//                viewModel.getWeatherFromRemoteServer(city.lat,city.lon)
-//            }
-//            position = it.getInt(BUNDLE_KEY_MAIN_FRAGMENT_IN_DETAILS_FRAGMENT_POSITION)
-//        }
     }
 
     private fun showPopupMenu(v: View) {
-        val context = ContextThemeWrapper(requireContext(),R.style.MyPopupMenu)
+        val context = ContextThemeWrapper(requireContext(), R.style.MyPopupMenu)
         val popupMenu = PopupMenu(context, v)
         popupMenu.inflate(R.menu.setting_menu)
 
         popupMenu.setOnMenuItemClickListener {
-            when(it.itemId){
+            when (it.itemId) {
                 R.id.share -> {
                     val sharingIntent = Intent(Intent.ACTION_SEND)
                     sharingIntent.type = "text/plain"
                     sharingIntent.putExtra(Intent.EXTRA_TEXT, "Text")
                     sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Subject")
-                    startActivity(Intent.createChooser(sharingIntent, requireActivity().resources.getString(R.string.share)))
+                    startActivity(Intent.createChooser(sharingIntent,
+                        requireActivity().resources.getString(R.string.share)))
                     return@setOnMenuItemClickListener true
                 }
                 R.id.setting -> {
                     requireActivity().supportFragmentManager.beginTransaction()
-                        .add(R.id.container, SettingFragment.newInstance(),"setting")
+                        .add(R.id.container, SettingFragment.newInstance(), "setting")
                         .addToBackStack("setting").commit()
                     return@setOnMenuItemClickListener true
                 }
@@ -110,14 +107,14 @@ class HomeFragment:Fragment() {
     }
 
     private fun renderData(appStateWeatherNow: Any) {
-        when(appStateWeatherNow){
+        when (appStateWeatherNow) {
             is AppStateWeather.Success7 -> {
                 adapter7Days.setWeather(appStateWeatherNow.weatherData)
             }
 
-            is AppStateWeather.SuccessEveryThreeHours ->{
+            is AppStateWeather.SuccessEveryThreeHours -> {
                 appStateWeatherNow.weatherData.forEach {
-                    if (it.date.unix > System.currentTimeMillis()/1000) {
+                    if (it.date.unix > System.currentTimeMillis() / 1000) {
                         weatherList.add(it)
                     }
                 }
@@ -126,9 +123,9 @@ class HomeFragment:Fragment() {
             }
             is AppStateWeather.Success -> {
                 weatherList.add(appStateWeatherNow.weatherData)
-                viewModel.getWeatherEveryHoursFromRemoteServer(lat,lon)
+                viewModel.getWeatherEveryHoursFromRemoteServer(lat, lon)
                 setWeatherData(appStateWeatherNow.weatherData)
-                getNameCity(lat,lon)
+                getNameCity(lat, lon)
             }
             else -> {}
         }
@@ -138,16 +135,16 @@ class HomeFragment:Fragment() {
     //Устанавливаем данные в фрагмент
     @SuppressLint("SetTextI18n", "SimpleDateFormat")
     private fun setWeatherData(weather: Response) {
-        with(binding){
-            when(sp.getString("temperature","")){
-                "°C"->{
+        with(binding) {
+            when (sp.getString("temperature", "")) {
+                "°C" -> {
                     temperature.text = weather.temperature.comfort.c.toString()
                 }
-                "°F"->{
+                "°F" -> {
                     temperature.text = weather.temperature.comfort.f.toString()
                 }
             }
-            when(sp.getString("windSpeed",requireActivity().resources.getString(R.string.km_h))){
+            when (sp.getString("windSpeed", requireActivity().resources.getString(R.string.km_h))) {
                 requireActivity().resources.getString(R.string.km_h) -> {
                     speedWind.text = weather.wind.speed.kmH.toString() + " km/h"
                 }
@@ -157,22 +154,26 @@ class HomeFragment:Fragment() {
                 requireActivity().resources.getString(R.string.m_s) -> {
                     speedWind.text = weather.wind.speed.mS.toString() + " m/s"
                 }
-                else ->{
+                else -> {
                     speedWind.text = weather.wind.speed.kmH.toString() + " km/h"
                 }
             }
-            when(sp.getString("pressure",requireActivity().resources.getString(R.string.mmhg))){
-                requireActivity().resources.getString(R.string.mmhg) ->{
-                    pressure.text = "${weather.pressure.mmHgATM} ${requireActivity().resources.getString(R.string.mmhg)}"
+            when (sp.getString("pressure", requireActivity().resources.getString(R.string.mmhg))) {
+                requireActivity().resources.getString(R.string.mmhg) -> {
+                    pressure.text =
+                        "${weather.pressure.mmHgATM} ${requireActivity().resources.getString(R.string.mmhg)}"
                 }
-                requireActivity().resources.getString(R.string.inHg) ->{
-                    pressure.text = "${weather.pressure.inHg} ${requireActivity().resources.getString(R.string.inHg)}"
+                requireActivity().resources.getString(R.string.inHg) -> {
+                    pressure.text =
+                        "${weather.pressure.inHg} ${requireActivity().resources.getString(R.string.inHg)}"
                 }
-                requireActivity().resources.getString(R.string.hPa) ->{
-                    pressure.text = "${weather.pressure.hPa} ${requireActivity().resources.getString(R.string.hPa)}"
+                requireActivity().resources.getString(R.string.hPa) -> {
+                    pressure.text =
+                        "${weather.pressure.hPa} ${requireActivity().resources.getString(R.string.hPa)}"
                 }
                 else -> {
-                    pressure.text = "${weather.pressure.mmHgATM} ${requireActivity().resources.getString(R.string.mmhg)}"
+                    pressure.text =
+                        "${weather.pressure.mmHgATM} ${requireActivity().resources.getString(R.string.mmhg)}"
                 }
             }
 
@@ -183,13 +184,15 @@ class HomeFragment:Fragment() {
             val dayOfTheWeek: String = sdf.format(Date())
             date.text = dayOfTheWeek
 
-            val resId = requireActivity().resources.getIdentifier(weather.icon, "drawable", requireActivity().packageName)
+            val resId = requireActivity().resources.getIdentifier(weather.icon,
+                "drawable",
+                requireActivity().packageName)
             binding.weatherImg.loadIconSvg(resId)
         }
     }
 
     //Получаю город по координатам
-    private fun getNameCity(lat:Double,lon:Double){
+    private fun getNameCity(lat: Double, lon: Double) {
         Thread {
             val geocoder = Geocoder(requireContext(), Locale.getDefault())
             try {
@@ -225,9 +228,9 @@ class HomeFragment:Fragment() {
         }.start()
     }
 
-    private fun ImageView.loadIconSvg(url: Int){
+    private fun ImageView.loadIconSvg(url: Int) {
         val imageLoader = ImageLoader.Builder(this.context)
-            .componentRegistry{add(SvgDecoder(this@loadIconSvg.context))}
+            .componentRegistry { add(SvgDecoder(this@loadIconSvg.context)) }
             .build()
 
         val request = ImageRequest.Builder(this.context)
@@ -264,6 +267,7 @@ class HomeFragment:Fragment() {
         super.onDestroy()
         _binding = null
     }
+
     companion object {
         fun newInstance() = HomeFragment()
     }
