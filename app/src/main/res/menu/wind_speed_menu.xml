@@ -13,9 +13,9 @@
             android:id="@+id/m"
             android:title="@string/m_s"
             />
-        <item
-            android:id="@+id/kn"
-            android:title="@string/kn"
-            />
+<!--        <item-->
+<!--            android:id="@+id/kn"-->
+<!--            android:title="@string/kn"-->
+<!--            />-->
     </group>
 </menu>

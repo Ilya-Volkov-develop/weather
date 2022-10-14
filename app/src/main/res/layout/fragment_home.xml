@@ -126,7 +126,8 @@
                 android:weightSum="2"
                 app:layout_constraintEnd_toEndOf="@+id/view"
                 app:layout_constraintStart_toStartOf="@+id/view"
-                app:layout_constraintTop_toBottomOf="@+id/view">
+                app:layout_constraintTop_toBottomOf="@+id/view"
+                android:baselineAligned="false">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/navigation_container"
@@ -151,7 +152,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:fontFamily="@font/poppins_regular"
-                        android:text="3.7 km/h"
+                        tools:text="3.7 km/h"
                         android:textColor="@color/white"
                         android:textSize="15sp"
                         app:layout_constraintStart_toEndOf="@+id/img_navigation"
@@ -188,7 +189,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:fontFamily="@font/poppins_regular"
-                        android:text="74%"
+                        tools:text="74%"
                         android:textColor="@color/white"
                         android:textSize="15sp"
                         app:layout_constraintStart_toEndOf="@+id/img_cloudiness"
@@ -215,7 +216,8 @@
                 android:weightSum="2"
                 app:layout_constraintEnd_toEndOf="@+id/view"
                 app:layout_constraintStart_toStartOf="@+id/view"
-                app:layout_constraintTop_toBottomOf="@+id/container1">
+                app:layout_constraintTop_toBottomOf="@+id/container1"
+                android:baselineAligned="false">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/pressure_container"
@@ -237,7 +239,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:fontFamily="@font/poppins_regular"
-                        android:text="1010 mbar"
+                        tools:text="1010 mbar"
                         android:textColor="@color/white"
                         android:textSize="15sp"
                         app:layout_constraintStart_toEndOf="@+id/img_pressure"
@@ -275,7 +277,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:fontFamily="@font/poppins_regular"
-                        android:text="Humidity 83%"
+                        tools:text="Humidity 83%"
                         android:textColor="@color/white"
                         android:textSize="15sp"
                         app:layout_constraintStart_toEndOf="@+id/img_humidity"

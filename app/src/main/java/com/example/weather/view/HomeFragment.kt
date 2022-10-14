@@ -1,7 +1,9 @@
 package com.example.weather.view
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
@@ -21,7 +23,6 @@ import com.example.weather.databinding.FragmentHomeBinding
 import com.example.weather.model.Response
 import com.example.weather.recycleradapter.Weather7DaysAdapter
 import com.example.weather.recycleradapter.WeatherEveryThreeHoursAdapter
-import com.example.weather.view.setting.SettingFragment
 import com.example.weather.viewmodel.AppStateWeather
 import com.example.weather.viewmodel.HomeViewModel
 import kotlinx.android.synthetic.main.fragment_home.*
@@ -37,6 +38,7 @@ class HomeFragment:Fragment() {
     private val lat:Double = 55.755811
     private val lon:Double = 37.617617
     private val weatherList = mutableListOf<Response>()
+    private lateinit var sp: SharedPreferences
 
     private val viewModel: HomeViewModel by lazy { ViewModelProvider(this)[HomeViewModel::class.java] }
     private val adapterEveryThreeHours: WeatherEveryThreeHoursAdapter by lazy { WeatherEveryThreeHoursAdapter() }
@@ -55,6 +57,7 @@ class HomeFragment:Fragment() {
 
     @SuppressLint("SimpleDateFormat")
     private fun init() {
+        sp = requireActivity().getSharedPreferences("Setting_preferences", Context.MODE_PRIVATE)
         val sdf = SimpleDateFormat("EEEE | MMM dd")
         val dayOfTheWeek: String = sdf.format(Date())
         binding.date2.text = dayOfTheWeek
@@ -94,7 +97,7 @@ class HomeFragment:Fragment() {
                 }
                 R.id.setting -> {
                     requireActivity().supportFragmentManager.beginTransaction()
-                        .add(R.id.container,SettingFragment.newInstance(),"setting")
+                        .add(R.id.container, SettingFragment.newInstance(),"setting")
                         .addToBackStack("setting").commit()
                     return@setOnMenuItemClickListener true
                 }
@@ -136,9 +139,43 @@ class HomeFragment:Fragment() {
     @SuppressLint("SetTextI18n", "SimpleDateFormat")
     private fun setWeatherData(weather: Response) {
         with(binding){
-            temperature.text = weather.temperature.comfort.c.toString()
-            speedWind.text = weather.wind.speed.kmH.toString() + " km/h"
-            pressure.text = weather.pressure.hPa.toString() + " mmHg"
+            when(sp.getString("temperature","")){
+                "°C"->{
+                    temperature.text = weather.temperature.comfort.c.toString()
+                }
+                "°F"->{
+                    temperature.text = weather.temperature.comfort.f.toString()
+                }
+            }
+            when(sp.getString("windSpeed",requireActivity().resources.getString(R.string.km_h))){
+                requireActivity().resources.getString(R.string.km_h) -> {
+                    speedWind.text = weather.wind.speed.kmH.toString() + " km/h"
+                }
+                requireActivity().resources.getString(R.string.mi_h) -> {
+                    speedWind.text = weather.wind.speed.miH.toString() + " mi/h"
+                }
+                requireActivity().resources.getString(R.string.m_s) -> {
+                    speedWind.text = weather.wind.speed.mS.toString() + " m/s"
+                }
+                else ->{
+                    speedWind.text = weather.wind.speed.kmH.toString() + " km/h"
+                }
+            }
+            when(sp.getString("pressure",requireActivity().resources.getString(R.string.mmhg))){
+                requireActivity().resources.getString(R.string.mmhg) ->{
+                    pressure.text = "${weather.pressure.mmHgATM} ${requireActivity().resources.getString(R.string.mmhg)}"
+                }
+                requireActivity().resources.getString(R.string.inHg) ->{
+                    pressure.text = "${weather.pressure.inHg} ${requireActivity().resources.getString(R.string.inHg)}"
+                }
+                requireActivity().resources.getString(R.string.hPa) ->{
+                    pressure.text = "${weather.pressure.hPa} ${requireActivity().resources.getString(R.string.hPa)}"
+                }
+                else -> {
+                    pressure.text = "${weather.pressure.mmHgATM} ${requireActivity().resources.getString(R.string.mmhg)}"
+                }
+            }
+
             humidity.text = weather.humidity.percent.toString() + "%"
             cloudiness.text = "${weather.cloudiness.percent}%"
             conditions.text = weather.description.full

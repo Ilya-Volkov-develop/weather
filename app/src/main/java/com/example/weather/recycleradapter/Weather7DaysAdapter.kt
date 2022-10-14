@@ -1,6 +1,7 @@
 package com.example.weather.recycleradapter
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -42,10 +43,10 @@ class Weather7DaysAdapter : RecyclerView.Adapter<Weather7DaysAdapter.Weather7Day
     }
 
     inner class Weather7DaysHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val sp = itemView.context.getSharedPreferences("Setting_preferences", Context.MODE_PRIVATE)
         @SuppressLint("SetTextI18n", "SimpleDateFormat")
         fun bind(responseData: Response7) {
             FragmentHomeRecyclerWeather7DaysBinding.bind(itemView).run {
-                //date.text = responseData.date.local.subSequence(11,16)
                 val sdf = SimpleDateFormat("dd MMM EEE")
                 val calendar = Calendar.getInstance()
                 calendar.timeInMillis = responseData.date.unix*1000
@@ -58,7 +59,14 @@ class Weather7DaysAdapter : RecyclerView.Adapter<Weather7DaysAdapter.Weather7Day
                     "${itemView.resources.getString(R.string.humidity)} " +
                             "${responseData.humidity.percent.avg}%"
 
-                temperature.text = "${responseData.temperature.comfort.min.c}°/${responseData.temperature.air.avg.c}°"
+                when(sp.getString("temperature","")){
+                    "°C"->{
+                        temperature.text = "${responseData.temperature.comfort.min.c}°/${responseData.temperature.air.avg.c}°"
+                    }
+                    "°F"->{
+                        temperature.text = "${responseData.temperature.comfort.min.f}°/${responseData.temperature.air.avg.f}°"
+                    }
+                }
             }
         }
         private fun ImageView.loadIconSvg(url: Int){

@@ -1,6 +1,7 @@
 package com.example.weather.recycleradapter
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -44,6 +45,7 @@ class WeatherEveryThreeHoursAdapter :
     }
 
     inner class WeatherEveryThreeHoursHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val sp = itemView.context.getSharedPreferences("Setting_preferences", Context.MODE_PRIVATE)
         @SuppressLint("SetTextI18n")
         fun bind(responseData: Response, position: Int) {
             FragmentHomeRecyclerWeatherEveryThreeHoursBinding.bind(itemView).run {
@@ -60,8 +62,17 @@ class WeatherEveryThreeHoursAdapter :
                 humidity.text =
                     "${itemView.resources.getString(R.string.humidity)} " +
                             "${responseData.humidity.percent}%"
-                temperature.text =
-                    "${responseData.temperature.comfort.c}°/${responseData.temperature.air.c}°"
+
+                when(sp.getString("temperature","")){
+                    "°C"->{
+                        temperature.text = "${responseData.temperature.comfort.c}°/${responseData.temperature.air.c}°"
+                    }
+                    "°F"->{
+                        temperature.text = "${responseData.temperature.comfort.f}°/${responseData.temperature.air.f}°"
+                    }
+                }
+//                temperature.text =
+//                    "${responseData.temperature.comfort.c}°/${responseData.temperature.air.c}°"
             }
         }
 
