@@ -28,4 +28,5 @@
     <string name="degree_c">°C</string>
     <string name="degree_f">°F</string>
     <string name="manage_location">Manage location</string>
+    <string name="search">Search Your City</string>
 </resources>

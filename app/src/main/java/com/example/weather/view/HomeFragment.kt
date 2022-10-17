@@ -26,9 +26,11 @@ import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.example.weather.R
 import com.example.weather.databinding.FragmentHomeBinding
+import com.example.weather.model.CityDTO
 import com.example.weather.model.Response
 import com.example.weather.recycleradapter.Weather7DaysAdapter
 import com.example.weather.recycleradapter.WeatherEveryThreeHoursAdapter
+import com.example.weather.utils.BUNDLE_KEY_SEARCH_IN_HOME
 import com.example.weather.utils.REQUEST_CODE
 import com.example.weather.viewmodel.AppStateWeather
 import com.example.weather.viewmodel.HomeViewModel
@@ -44,8 +46,9 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private var lat: Double = 55.755811
-    private var lon: Double = 37.617617
+    private var lat: Double = -1000.0
+    private var lon: Double = -1000.0
+    private lateinit var cityName:String
     private val weatherList = mutableListOf<Response>()
     private lateinit var sp: SharedPreferences
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -67,12 +70,24 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+        arguments?.let {
+            it.getParcelable<CityDTO>(BUNDLE_KEY_SEARCH_IN_HOME)?.let { cityDTO ->
+                lat = cityDTO.coords.lat.toDouble()
+                lon = cityDTO.coords.lon.toDouble()
+                cityName = cityDTO.name
+            }
+        }
         init()
     }
 
     @SuppressLint("SimpleDateFormat")
     private fun init() {
-        checkPermission()
+        if (lat != -1000.0 && lon != -1000.0){
+            viewModel.getWeatherNowFromRemoteServer(lat, lon)
+            binding.cityName.text = cityName
+        } else {
+            checkPermission()
+        }
         binding.weather7RecyclerView.adapter = adapter7Days
         binding.weatherRecyclerView.adapter = adapterEveryThreeHours
         viewModel.getLiveData().observe(viewLifecycleOwner) { renderData(it) }
@@ -123,7 +138,6 @@ class HomeFragment : Fragment() {
         lon = location.longitude
         viewModel.getWeatherNowFromRemoteServer(lat, lon)
         getNameCity(lat, lon)
-        Log.d("mylogs"," $location")
     }
 
 
@@ -341,5 +355,6 @@ class HomeFragment : Fragment() {
 
     companion object {
         fun newInstance() = HomeFragment()
+        fun newInstance(bundle: Bundle) = HomeFragment().apply { arguments = bundle }
     }
 }

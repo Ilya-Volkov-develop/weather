@@ -6,3 +6,4 @@ const val WEATHER_EVERY_THREE_HOURS_API_URL_END_POINT = "v2/weather/forecast"
 const val WEATHER_7_DAYS_API_URL_END_POINT = "v2/weather/forecast/aggregate"
 const val API_KEY_NAME = "X-Gismeteo-Token"
 const val REQUEST_CODE = 999
+const val BUNDLE_KEY_SEARCH_IN_HOME ="BUNDLE_KEY_SEARCH_IN_HOME"

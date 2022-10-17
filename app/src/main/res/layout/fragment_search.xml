@@ -41,7 +41,30 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <SearchView
+            android:id="@+id/search"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:background="@drawable/search_frame"
+            android:iconifiedByDefault="false"
+            android:queryHint="@string/search"
+            android:layout_marginHorizontal="15dp"
+            android:layout_marginTop="30dp"
+            android:searchIcon="@drawable/magnifying_glass"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title" />
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/cities_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp"
+            android:layout_marginHorizontal="15dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/search" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
