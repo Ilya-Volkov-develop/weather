@@ -1,18 +1,24 @@
 package com.example.weather.view
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
+import android.location.Location
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import coil.ImageLoader
@@ -23,22 +29,26 @@ import com.example.weather.databinding.FragmentHomeBinding
 import com.example.weather.model.Response
 import com.example.weather.recycleradapter.Weather7DaysAdapter
 import com.example.weather.recycleradapter.WeatherEveryThreeHoursAdapter
+import com.example.weather.utils.REQUEST_CODE
 import com.example.weather.viewmodel.AppStateWeather
 import com.example.weather.viewmodel.HomeViewModel
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.fragment_home.*
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-
+@Suppress("DEPRECATION")
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
-    private val lat: Double = 55.755811
-    private val lon: Double = 37.617617
+    private var lat: Double = 55.755811
+    private var lon: Double = 37.617617
     private val weatherList = mutableListOf<Response>()
     private lateinit var sp: SharedPreferences
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private val viewModel: HomeViewModel by lazy { ViewModelProvider(this)[HomeViewModel::class.java] }
     private val adapterEveryThreeHours: WeatherEveryThreeHoursAdapter by lazy { WeatherEveryThreeHoursAdapter() }
@@ -56,24 +66,109 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
         init()
     }
 
     @SuppressLint("SimpleDateFormat")
     private fun init() {
+        checkPermission()
+        binding.weather7RecyclerView.adapter = adapter7Days
+        binding.weatherRecyclerView.adapter = adapterEveryThreeHours
+        viewModel.getLiveData().observe(viewLifecycleOwner) { renderData(it) }
         sp = requireActivity().getSharedPreferences("Setting_preferences", Context.MODE_PRIVATE)
         val sdf = SimpleDateFormat("EEEE | MMM dd")
         val dayOfTheWeek: String = sdf.format(Date())
         binding.date2.text = dayOfTheWeek
-
-        binding.weather7RecyclerView.adapter = adapter7Days
-        binding.weatherRecyclerView.adapter = adapterEveryThreeHours
-        viewModel.getLiveData().observe(viewLifecycleOwner) { renderData(it) }
-        viewModel.getWeatherNowFromRemoteServer(lat, lon)
+        btn_add_weather.setOnClickListener {
+            requireActivity().supportFragmentManager.beginTransaction()
+                .add(R.id.container,SearchFragment.newInstance(),"search")
+                .addToBackStack("search").commit()
+        }
 
         btn_setting.setOnClickListener {
             showPopupMenu(it)
         }
+        update_swipe_down.setOnRefreshListener {
+            viewModel.getWeatherNowFromRemoteServer(lat, lon)
+            update_swipe_down.isRefreshing = false
+        }
+    }
+
+    private fun checkPermission() {
+        context?.let { it ->
+            when {
+                ContextCompat.checkSelfPermission(
+                    it,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                        location?.let { it ->
+                            getAddress(it)
+                        }
+                    }
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
+                    showDialogPermission()
+                }
+                else -> {
+                    myRequestPermission()
+                }
+            }
+        }
+    }
+
+    private fun getAddress(location: Location){
+        lat = location.latitude
+        lon = location.longitude
+        viewModel.getWeatherNowFromRemoteServer(lat, lon)
+        getNameCity(lat, lon)
+        Log.d("mylogs"," $location")
+    }
+
+
+    private fun myRequestPermission() {
+        requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray,
+    ) {
+        if (requestCode == REQUEST_CODE) {
+
+            when {
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED -> {
+                    fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+                        location?.let { it ->
+                            getAddress(it)
+                        }
+                    }
+                }
+                shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) -> {
+                    showDialogPermission()
+                }
+                else -> {
+                    Log.d("mylogs", "КОНЕЦ")
+                }
+            }
+        }
+    }
+
+    private fun showDialogPermission() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Доступ к контактам")
+            .setMessage("Объяснение")
+            .setPositiveButton("Предоставить доступ") { _, _ ->
+                myRequestPermission()
+            }
+            .setNegativeButton("Не надо") { dialog, _ -> dialog.dismiss() }
+            .create()
+            .show()
     }
 
     private fun showPopupMenu(v: View) {
@@ -125,7 +220,6 @@ class HomeFragment : Fragment() {
                 weatherList.add(appStateWeatherNow.weatherData)
                 viewModel.getWeatherEveryHoursFromRemoteServer(lat, lon)
                 setWeatherData(appStateWeatherNow.weatherData)
-                getNameCity(lat, lon)
             }
             else -> {}
         }
@@ -136,12 +230,12 @@ class HomeFragment : Fragment() {
     @SuppressLint("SetTextI18n", "SimpleDateFormat")
     private fun setWeatherData(weather: Response) {
         with(binding) {
-            when (sp.getString("temperature", "")) {
+            when (sp.getString("temperature", requireActivity().resources.getString(R.string.degree_c))) {
                 "°C" -> {
-                    temperature.text = weather.temperature.comfort.c.toString()
+                    temperature.text = weather.temperature.air.c.toString()
                 }
                 "°F" -> {
-                    temperature.text = weather.temperature.comfort.f.toString()
+                    temperature.text = weather.temperature.air.f.toString()
                 }
             }
             when (sp.getString("windSpeed", requireActivity().resources.getString(R.string.km_h))) {
@@ -191,7 +285,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    //Получаю город по координатам
+    //Получаю местоположение по координатам
     private fun getNameCity(lat: Double, lon: Double) {
         Thread {
             val geocoder = Geocoder(requireContext(), Locale.getDefault())
@@ -200,7 +294,7 @@ class HomeFragment : Fragment() {
                 var mThoroughfare = ""
                 var mSubThoroughfare = ""
                 val addresses: List<Address>? = geocoder.getFromLocation(lat, lon, 1)
-                if (addresses != null) {
+                if (addresses != null && addresses.isNotEmpty()) {
                     if (addresses[0].subAdminArea != null) {
                         subAdminArea = addresses[0].subAdminArea
                     }
@@ -239,29 +333,6 @@ class HomeFragment : Fragment() {
             .build()
         imageLoader.enqueue(request)
     }
-//
-//    //при ошибке всплывает диалоговое окно
-//    private fun loadingFailed(textId: Int, code: Int) {
-//        val dialog: AlertDialog.Builder = AlertDialog.Builder(requireContext())
-//        val inflater: LayoutInflater? = LayoutInflater.from(requireContext())
-//        val exitView: View = inflater!!.inflate(R.layout.dialog_error, null)
-//        dialog.setView(exitView)
-//        val dialog1: Dialog? = dialog.create()
-//        val ok: Button = exitView.findViewById(R.id.ok)
-//        val codeTextView = exitView.findViewById<TextView>(R.id.textError)
-//
-//        codeTextView.text = when(textId) {
-//            R.string.errorOnServer -> getString(R.string.errorOnServer)
-//            R.string.codeError -> getString(R.string.codeError) + " " + code
-//            else -> ""
-//        }
-//        dialog1?.setCancelable(false)
-//        ok.setOnClickListener {
-//            dialog1?.dismiss()
-//            requireActivity().onBackPressed()
-//        }
-//        dialog1?.show()
-//    }
 
     override fun onDestroy() {
         super.onDestroy()

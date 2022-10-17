@@ -63,12 +63,12 @@ class WeatherEveryThreeHoursAdapter :
                     "${itemView.resources.getString(R.string.humidity)} " +
                             "${responseData.humidity.percent}%"
 
-                when(sp.getString("temperature","")){
+                when(sp.getString("temperature",itemView.context.resources.getString(R.string.degree_c))){
                     "°C"->{
-                        temperature.text = "${responseData.temperature.comfort.c}°/${responseData.temperature.air.c}°"
+                        temperature.text = "${responseData.temperature.air.c}°/${responseData.temperature.comfort.c}°"
                     }
                     "°F"->{
-                        temperature.text = "${responseData.temperature.comfort.f}°/${responseData.temperature.air.f}°"
+                        temperature.text = "${responseData.temperature.air.f}°/${responseData.temperature.comfort.f}°"
                     }
                 }
 //                temperature.text =

@@ -59,12 +59,12 @@ class Weather7DaysAdapter : RecyclerView.Adapter<Weather7DaysAdapter.Weather7Day
                     "${itemView.resources.getString(R.string.humidity)} " +
                             "${responseData.humidity.percent.avg}%"
 
-                when(sp.getString("temperature","")){
+                when(sp.getString("temperature",itemView.context.resources.getString(R.string.degree_c))){
                     "°C"->{
-                        temperature.text = "${responseData.temperature.comfort.min.c}°/${responseData.temperature.air.avg.c}°"
+                        temperature.text = "${responseData.temperature.air.avg.c}°/${responseData.temperature.comfort.min.c}°"
                     }
                     "°F"->{
-                        temperature.text = "${responseData.temperature.comfort.min.f}°/${responseData.temperature.air.avg.f}°"
+                        temperature.text = "${responseData.temperature.air.avg.f}°/${responseData.temperature.comfort.min.f}°"
                     }
                 }
             }
