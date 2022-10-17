@@ -18,15 +18,12 @@
     <string name="km_h">km/h</string>
     <string name="mi_h">mi/h</string>
     <string name="m_s">m/s</string>
-    <string name="kn">kn</string>
-    <string name="mbar">mbar</string>
-    <string name="atm">atm</string>
     <string name="mmhg">mmHg</string>
     <string name="inHg">inHg</string>
     <string name="hPa">hPa</string>
-    <string name="degree">°</string>
-    <string name="degree_c">°C</string>
-    <string name="degree_f">°F</string>
+    <string name="degree" translatable="false">°</string>
+    <string name="degree_c" translatable="false">°C</string>
+    <string name="degree_f" translatable="false">°F</string>
     <string name="manage_location">Manage location</string>
     <string name="search">Search Your City</string>
 </resources>

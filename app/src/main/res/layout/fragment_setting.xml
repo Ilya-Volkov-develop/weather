@@ -61,17 +61,19 @@
             android:layout_marginHorizontal="20dp"
             android:layout_marginTop="12dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/unit_title">
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/temperature_unit"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_regular"
                 android:text="@string/temperature_unit"
                 android:textColor="@color/white"
                 android:textSize="16sp"
+                app:layout_constraintEnd_toStartOf="@+id/temperature_unit_result"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -80,7 +82,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_regular"
-                android:text="°C"
+                android:text="@string/degree_c"
                 android:textColor="@color/light_gray"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -100,12 +102,13 @@
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/wind_speed_unit"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_regular"
                 android:text="@string/wind_speed_unit"
                 android:textColor="@color/white"
                 android:textSize="16sp"
+                app:layout_constraintEnd_toStartOf="@+id/wind_speed_unit_result"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -114,7 +117,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_regular"
-                android:text="km/h"
+                android:text="@string/km_h"
                 android:textColor="@color/light_gray"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -134,12 +137,13 @@
 
             <androidx.appcompat.widget.AppCompatTextView
                 android:id="@+id/pressure_unit"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_regular"
                 android:text="@string/atmospheric_pressure"
                 android:textColor="@color/white"
                 android:textSize="16sp"
+                app:layout_constraintEnd_toStartOf="@+id/pressure_unit_result"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -148,7 +152,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_regular"
-                android:text="mbar"
+                android:text="@string/mmhg"
                 android:textColor="@color/light_gray"
                 android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"

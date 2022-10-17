@@ -3,8 +3,8 @@ package com.example.weather.repository.mainscreen
 import com.example.weather.App
 import com.example.weather.BuildConfig
 import com.example.weather.model.Weather7DTO
-import com.example.weather.model.WeatherNowDTO
 import com.example.weather.model.WeatherEveryThreeHoursDTO
+import com.example.weather.model.WeatherNowDTO
 import retrofit2.Callback
 
 class RepositoryRemoteImpl : RepositoryWeatherServer {

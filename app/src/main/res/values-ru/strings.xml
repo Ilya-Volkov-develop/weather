@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Погода</string>
+    <string name="wind">Ветер</string>
+    <string name="pressure">Давление</string>
+    <string name="humidity">Влажность</string>
+    <string name="cloudiness">Облачность</string>
+    <string name="now">Сейчас</string>
+    <string name="forcats_for_7_days">Прогноз на 7 дней</string>
+    <string name="share">Поделиться</string>
+    <string name="setting">Настройки</string>
+    <string name="unit">Единица измерения</string>
+    <string name="temperature_unit">Единица измерения температуры</string>
+    <string name="wind_speed_unit">Единица измерения скорости ветра</string>
+    <string name="atmospheric_pressure">Единица измерения атмосферного давления</string>
+    <string name="extra">Дополнительный</string>
+    <string name="about">О приложении</string>
+    <string name="privacy_policy">Политика конфиденциальности</string>
+    <string name="km_h">км/ч</string>
+    <string name="mi_h">миль/ч</string>
+    <string name="m_s">м/с</string>
+    <string name="mmhg">мм рт. ст.</string>
+    <string name="inHg">д рт.ст.</string>
+    <string name="hPa">гПа</string>
+    <string name="manage_location">Местоположение</string>
+    <string name="search">Найдите Свой Город</string>
+</resources>

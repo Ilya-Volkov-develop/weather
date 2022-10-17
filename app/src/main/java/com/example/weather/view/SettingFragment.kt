@@ -35,7 +35,7 @@ class SettingFragment:Fragment() {
         with(binding){
             temperatureUnitResult.text = sp.getString("temperature","°C")
             windSpeedUnitResult.text = sp.getString("windSpeed",requireActivity().resources.getString(R.string.km_h))
-            pressureUnitResult.text = sp.getString("pressure",requireActivity().resources.getString(R.string.mbar))
+            pressureUnitResult.text = sp.getString("pressure",requireActivity().resources.getString(R.string.mmhg))
             btnBack.setOnClickListener {
                 requireActivity().onBackPressed()
             }

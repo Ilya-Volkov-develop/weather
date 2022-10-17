@@ -7,10 +7,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -37,9 +41,11 @@ import com.example.weather.viewmodel.HomeViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.fragment_home.*
+import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 @Suppress("DEPRECATION")
 class HomeFragment : Fragment() {
@@ -52,6 +58,7 @@ class HomeFragment : Fragment() {
     private val weatherList = mutableListOf<Response>()
     private lateinit var sp: SharedPreferences
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var weather:Response
 
     private val viewModel: HomeViewModel by lazy { ViewModelProvider(this)[HomeViewModel::class.java] }
     private val adapterEveryThreeHours: WeatherEveryThreeHoursAdapter by lazy { WeatherEveryThreeHoursAdapter() }
@@ -101,12 +108,15 @@ class HomeFragment : Fragment() {
                 .addToBackStack("search").commit()
         }
 
-        btn_setting.setOnClickListener {
+        binding.btnSetting.setOnClickListener {
             showPopupMenu(it)
         }
-        update_swipe_down.setOnRefreshListener {
+        binding.updateSwipeDown.setOnRefreshListener {
             viewModel.getWeatherNowFromRemoteServer(lat, lon)
             update_swipe_down.isRefreshing = false
+        }
+        binding.cityName.setOnClickListener {
+            checkPermission()
         }
     }
 
@@ -175,8 +185,8 @@ class HomeFragment : Fragment() {
 
     private fun showDialogPermission() {
         AlertDialog.Builder(requireContext())
-            .setTitle("Доступ к контактам")
-            .setMessage("Объяснение")
+            .setTitle("Доступ к местоположению")
+            .setMessage("Доступ к местоположению нужен для отображения погоды в месте, где вы сейчас находитесь")
             .setPositiveButton("Предоставить доступ") { _, _ ->
                 myRequestPermission()
             }
@@ -193,12 +203,23 @@ class HomeFragment : Fragment() {
         popupMenu.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.share -> {
-                    val sharingIntent = Intent(Intent.ACTION_SEND)
-                    sharingIntent.type = "text/plain"
-                    sharingIntent.putExtra(Intent.EXTRA_TEXT, "Text")
-                    sharingIntent.putExtra(Intent.EXTRA_SUBJECT, "Subject")
-                    startActivity(Intent.createChooser(sharingIntent,
-                        requireActivity().resources.getString(R.string.share)))
+                    val bitmapDrawable = binding.weatherImg.drawable as BitmapDrawable
+                    val bytes = ByteArrayOutputStream()
+                    bitmapDrawable.bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+                    val path: String =
+                        MediaStore.Images.Media.insertImage(requireContext().contentResolver,
+                            bitmapDrawable.bitmap,
+                            "Title",
+                            null)
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, "$cityName, ${weather.temperature.air.c}°C, ${weather.description.full}")
+                        putExtra(Intent.EXTRA_STREAM,Uri.parse(path))
+                        type = "*/*"
+                    }
+
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    startActivity(shareIntent)
                     return@setOnMenuItemClickListener true
                 }
                 R.id.setting -> {
@@ -233,7 +254,8 @@ class HomeFragment : Fragment() {
             is AppStateWeather.Success -> {
                 weatherList.add(appStateWeatherNow.weatherData)
                 viewModel.getWeatherEveryHoursFromRemoteServer(lat, lon)
-                setWeatherData(appStateWeatherNow.weatherData)
+                weather = appStateWeatherNow.weatherData
+                setWeatherData(weather)
             }
             else -> {}
         }
@@ -254,16 +276,16 @@ class HomeFragment : Fragment() {
             }
             when (sp.getString("windSpeed", requireActivity().resources.getString(R.string.km_h))) {
                 requireActivity().resources.getString(R.string.km_h) -> {
-                    speedWind.text = weather.wind.speed.kmH.toString() + " km/h"
+                    speedWind.text = "${weather.wind.speed.kmH} ${requireActivity().resources.getString(R.string.km_h)}"
                 }
                 requireActivity().resources.getString(R.string.mi_h) -> {
-                    speedWind.text = weather.wind.speed.miH.toString() + " mi/h"
+                    speedWind.text = "${weather.wind.speed.miH} ${requireActivity().resources.getString(R.string.mi_h)}"
                 }
                 requireActivity().resources.getString(R.string.m_s) -> {
-                    speedWind.text = weather.wind.speed.mS.toString() + " m/s"
+                    speedWind.text = "${weather.wind.speed.mS} ${requireActivity().resources.getString(R.string.m_s)}"
                 }
                 else -> {
-                    speedWind.text = weather.wind.speed.kmH.toString() + " km/h"
+                    speedWind.text = "${weather.wind.speed.kmH} ${requireActivity().resources.getString(R.string.km_h)}"
                 }
             }
             when (sp.getString("pressure", requireActivity().resources.getString(R.string.mmhg))) {
@@ -321,7 +343,8 @@ class HomeFragment : Fragment() {
                     val strReturnedAddress = StringBuilder(
                         "$subAdminArea\n$mThoroughfare $mSubThoroughfare")
                     requireActivity().runOnUiThread {
-                        binding.cityName.text = strReturnedAddress.toString()
+                        cityName = strReturnedAddress.toString()
+                        binding.cityName.text = cityName
                     }
                 } else {
                     requireActivity().runOnUiThread {
